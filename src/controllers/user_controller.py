@@ -36,9 +36,28 @@ class UserController:
             )
             
             # Basic stats
+            current_xp, required_xp, xp_percentage = stats.user.get_xp_progress()
+            level_text = f"**Level**: {stats.user.level}"
+            if stats.user.level >= 99:
+                level_text += " 🏆 **MAX LEVEL!**"
+            if stats.user.is_outlaw:
+                level_text += " 🏴‍☠️ **OUTLAW!**"
+            
             embed.add_field(
                 name="📊 Statistics",
-                value=f"**Level**: {stats.user.level}\n**Experience**: {stats.user.experience}\n**Duels Played**: {stats.user.duels_played}",
+                value=f"{level_text}\n**Experience**: {stats.user.experience:,}\n**Duels Played**: {stats.user.duels_played}\n**Duels Today**: {stats.user.duels_today}",
+                inline=True
+            )
+            
+            # XP Progress
+            if stats.user.level >= 99:
+                progress_text = "🏆 **MAX LEVEL REACHED!**\nYou've achieved the highest level possible!"
+            else:
+                progress_text = f"**Level {stats.user.level}** → **Level {stats.user.level + 1}**\n**Progress**: {xp_percentage}%\n**XP**: {current_xp}/{required_xp}\n**Needed**: {required_xp - current_xp} XP"
+            
+            embed.add_field(
+                name="📈 Experience Progress",
+                value=progress_text,
                 inline=True
             )
             

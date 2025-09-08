@@ -54,25 +54,28 @@ class Database:
             await conn.execute("DROP TABLE IF EXISTS users CASCADE")
             # Create users table
             await conn.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                    user_id BIGINT NOT NULL,
-                    username VARCHAR(255) NOT NULL,
-                    display_name VARCHAR(255),
-                    guild_id BIGINT NOT NULL,
-                    level INTEGER DEFAULT 1,
-                    experience INTEGER DEFAULT 0,
-                    wins INTEGER DEFAULT 0,
-                    losses INTEGER DEFAULT 0,
-                    draws INTEGER DEFAULT 0,
-                    win_streak INTEGER DEFAULT 0,
-                    best_win_streak INTEGER DEFAULT 0,
-                    total_damage_dealt INTEGER DEFAULT 0,
-                    total_damage_taken INTEGER DEFAULT 0,
-                    duels_played INTEGER DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (user_id, guild_id)
-                )
+            CREATE TABLE IF NOT EXISTS users (
+                user_id BIGINT NOT NULL,
+                username VARCHAR(255) NOT NULL,
+                display_name VARCHAR(255),
+                guild_id BIGINT NOT NULL,
+                level INTEGER DEFAULT 1,
+                experience INTEGER DEFAULT 0,
+                wins INTEGER DEFAULT 0,
+                losses INTEGER DEFAULT 0,
+                draws INTEGER DEFAULT 0,
+                win_streak INTEGER DEFAULT 0,
+                best_win_streak INTEGER DEFAULT 0,
+                total_damage_dealt INTEGER DEFAULT 0,
+                total_damage_taken INTEGER DEFAULT 0,
+                duels_played INTEGER DEFAULT 0,
+                duels_today INTEGER DEFAULT 0,
+                last_duel_date TIMESTAMP,
+                is_outlaw BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, guild_id)
+            )
             """)
             
             # Create duels table
@@ -233,8 +236,9 @@ class Database:
         """Get guild leaderboard."""
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("""
-                SELECT user_id, username, display_name, level, wins, losses, draws, 
-                       win_streak, best_win_streak, duels_played
+                SELECT user_id, username, display_name, guild_id, level, wins, losses, draws, 
+                       win_streak, best_win_streak, duels_played, experience,
+                       total_damage_dealt, total_damage_taken, created_at, updated_at
                 FROM users 
                 WHERE guild_id = $1 AND duels_played > 0
                 ORDER BY wins DESC, win_streak DESC, level DESC
@@ -246,24 +250,8 @@ class Database:
         """Get detailed user statistics."""
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow("""
-                SELECT u.*, 
-                       COALESCE(duel_stats.duels_won, 0) as duels_won,
-                       COALESCE(duel_stats.duels_lost, 0) as duels_lost,
-                       COALESCE(duel_stats.duels_drawn, 0) as duels_drawn
-                FROM users u
-                LEFT JOIN (
-                    SELECT 
-                        CASE WHEN winner_id = $1 THEN challenger_id ELSE challenged_id END as user_id,
-                        COUNT(CASE WHEN winner_id = $1 THEN 1 END) as duels_won,
-                        COUNT(CASE WHEN winner_id != $1 AND winner_id IS NOT NULL THEN 1 END) as duels_lost,
-                        COUNT(CASE WHEN winner_id IS NULL AND status = 'completed' THEN 1 END) as duels_drawn
-                    FROM duels 
-                    WHERE (challenger_id = $1 OR challenged_id = $1) 
-                    AND guild_id = $2 
-                    AND status = 'completed'
-                    GROUP BY user_id
-                ) duel_stats ON u.user_id = duel_stats.user_id
-                WHERE u.user_id = $1 AND u.guild_id = $2
+                SELECT * FROM users 
+                WHERE user_id = $1 AND guild_id = $2
             """, user_id, guild_id)
             return dict(row) if row else None
 

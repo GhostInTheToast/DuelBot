@@ -46,9 +46,9 @@ class DatabaseService:
         user = User.from_dict(data)
         return UserStats(
             user=user,
-            duels_won=data.get('duels_won', 0),
-            duels_lost=data.get('duels_lost', 0),
-            duels_drawn=data.get('duels_drawn', 0)
+            duels_won=user.wins,  # Use wins from User model
+            duels_lost=user.losses,  # Use losses from User model
+            duels_drawn=user.draws  # Use draws from User model
         )
     
     # Duel operations
