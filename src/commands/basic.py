@@ -85,11 +85,18 @@ def setup_basic_commands(bot):
                 command_list = []
                 for cmd in basic_commands:
                     command_list.append(f"`{cmd.name}` - {cmd.help or 'No description'}")
-                embed.add_field(
-                    name="Basic Commands",
-                    value="\n".join(command_list),
-                    inline=False
-                )
+            embed.add_field(
+                name="Basic Commands",
+                value="\n".join(command_list),
+                inline=False
+            )
+            
+            # Add duel help reference
+            embed.add_field(
+                name="⚔️ Duel System",
+                value="Use `$duelhelp` for comprehensive duel commands and gameplay guide!",
+                inline=False
+            )
             
             embed.set_footer(text="Use !help <command> for detailed information about a specific command")
             await ctx.send(embed=embed)

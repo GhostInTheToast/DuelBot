@@ -11,11 +11,34 @@ DuelBot/
 │   ├── main.py              # Main entry point
 │   ├── bot.py               # Main bot class
 │   ├── config.py            # Configuration management
+│   ├── database.py          # Database connection and operations
 │   ├── events.py            # Event handlers
-│   └── commands/
-│       ├── __init__.py      # Commands package
+│   ├── models/              # Data models
+│   │   ├── __init__.py
+│   │   ├── user.py          # User and UserStats models
+│   │   └── duel.py          # Duel and DuelMove models
+│   ├── services/            # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── database_service.py  # Database operations
+│   │   ├── user_service.py      # User business logic
+│   │   └── duel_service.py      # Duel business logic
+│   ├── controllers/         # Command handlers (like routes)
+│   │   ├── __init__.py
+│   │   ├── duel_controller.py   # Duel command handlers
+│   │   └── user_controller.py   # User command handlers
+│   ├── middleware/          # Common functionality
+│   │   ├── __init__.py
+│   │   ├── cooldown_middleware.py  # Cooldown management
+│   │   └── error_middleware.py     # Error handling
+│   ├── utils/               # Helper functions
+│   │   ├── __init__.py
+│   │   ├── helpers.py       # Utility functions
+│   │   └── validators.py    # Validation functions
+│   └── commands/            # Discord command definitions
+│       ├── __init__.py
 │       ├── basic.py         # Basic commands
-│       └── admin.py         # Admin commands
+│       ├── admin.py         # Admin commands
+│       └── duel_commands.py # Duel system commands
 ├── requirements.txt         # Python dependencies
 ├── .env                     # Environment variables (create this)
 ├── .gitignore              # Git ignore rules
@@ -36,15 +59,33 @@ DuelBot/
    - Click "Add Bot"
    - Copy the bot token
 
-3. **Configure the bot:**
+3. **Set up PostgreSQL database:**
+   - Install PostgreSQL on your system
+   - Create a database named `duelbot`
+   - Note your database credentials
+
+4. **Configure the bot:**
    - Create a `.env` file in the project root
-   - Add your bot token and any other configuration:
+   - Add your bot token and database configuration:
      ```env
      DISCORD_BOT_TOKEN=your_actual_bot_token_here
-     COMMAND_PREFIX=!
+     COMMAND_PREFIX=$
      BOT_NAME=DuelBot
-     BOT_ACTIVITY=for commands
+     BOT_ACTIVITY=for duels
      LOG_LEVEL=INFO
+     
+     # Database Configuration
+     DATABASE_URL=postgresql://username:password@localhost:5432/duelbot
+     DB_HOST=localhost
+     DB_PORT=5432
+     DB_NAME=duelbot
+     DB_USER=your_db_username
+     DB_PASSWORD=your_db_password
+     
+     # Duel Settings
+     DUEL_COOLDOWN=300
+     DUEL_TIMEOUT=60
+     MAX_DUEL_DURATION=300
      ```
 
 4. **Invite the bot to your server:**
@@ -60,18 +101,34 @@ DuelBot/
 
 ## Commands
 
+### Duel Commands
+- `$duel @user` - Challenge a user to a duel
+- `$accept` - Accept a pending duel challenge
+- `$decline` - Decline a pending duel challenge
+- `$cancel` - Cancel your pending duel challenge
+- `$attack` - Attack your opponent in an active duel
+- `$defend` - Defend (reduces incoming damage)
+- `$heal` - Heal yourself in an active duel
+- `$special` - Use special attack (risky but powerful)
+- `$duelstatus` - Check your current duel status
+
+### User Commands
+- `$profile [@user]` - View your or another user's profile
+- `$stats [@user]` - View stats (alias for profile)
+- `$leaderboard [limit]` - View the guild leaderboard
+
 ### Basic Commands
-- `!ping` - Check bot latency
-- `!hello` - Say hello to the bot
-- `!info` - Get bot information
-- `!help` - Show help message
-- `!help <command>` - Show help for specific command
+- `$ping` - Check bot latency
+- `$hello` - Say hello to the bot
+- `$info` - Get bot information
+- `$help` - Show help message
+- `$help <command>` - Show help for specific command
 
 ### Admin Commands (Owner Only)
-- `!shutdown` - Shutdown the bot
-- `!reload <module>` - Reload a command module
-- `!guilds` - List all guilds the bot is in
-- `!status <type> <text>` - Set bot status (playing/watching/listening/streaming)
+- `$shutdown` - Shutdown the bot
+- `$reload <module>` - Reload a command module
+- `$guilds` - List all guilds the bot is in
+- `$status <type> <text>` - Set bot status (playing/watching/listening/streaming)
 
 ## Features
 
