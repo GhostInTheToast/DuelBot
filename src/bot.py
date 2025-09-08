@@ -4,9 +4,9 @@ import logging
 import discord
 from discord.ext import commands
 
-from .commands import setup_commands
-from .config import Config
-from .events import setup_events
+from commands import setup_commands
+from config import Config
+from events import setup_events
 
 # Configure logging
 logging.basicConfig(level=getattr(logging, Config.LOG_LEVEL))
